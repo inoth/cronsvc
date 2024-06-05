@@ -23,7 +23,7 @@ func (svc *ServiceInstance) String() string {
 	return fmt.Sprintf("%s-%s-%s", svc.Name, svc.ID, svc.Version)
 }
 
-func (svc *ServiceInstance) Equal(o interface{}) bool {
+func (svc *ServiceInstance) Equal(o any) bool {
 	if svc == nil && o == nil {
 		return true
 	}
