@@ -1,0 +1,2 @@
+[server.executor]
+max_task = 1000
