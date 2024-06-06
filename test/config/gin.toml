@@ -1,0 +1,9 @@
+[server.gin]
+
+port = ":9191"
+read_timeout = 10
+write_timeout = 10
+max_header_bytes = 10
+tls = false
+cert = ""
+key = ""

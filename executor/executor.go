@@ -9,9 +9,29 @@ const (
 	name = "executor"
 )
 
-// 启动cron监听进程
+var (
+	ecr *Executor
+)
+
 type Executor struct {
-	MaxTask int `toml:"max_task"`
+	option
+
+	//TODO: 新建pipline处理接收的任务
+	receiver chan<- []byte
+	execute  <-chan []byte
+}
+
+func New(opts ...Option) *Executor {
+	o := option{}
+	for _, opt := range opts {
+		opt(&o)
+	}
+	ecr = &Executor{
+		option:   o,
+		receiver: make(chan<- []byte, 1000),
+		execute:  make(<-chan []byte, 1000),
+	}
+	return ecr
 }
 
 func (e *Executor) Name() string {
@@ -19,7 +39,7 @@ func (e *Executor) Name() string {
 }
 
 func (e *Executor) Start(ctx context.Context) error {
-	fmt.Printf("%s start run, max_task %d", name, e.MaxTask)
+	fmt.Printf("%s start run, max_task %d\n", name, e.MaxTask)
 	return nil
 }
 
