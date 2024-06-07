@@ -16,9 +16,8 @@ var (
 type Executor struct {
 	option
 
-	//TODO: 新建pipline处理接收的任务
-	receiver chan<- []byte
-	execute  <-chan []byte
+	receiver chan []byte
+	execute  chan []byte
 }
 
 func New(opts ...Option) *Executor {
@@ -28,8 +27,8 @@ func New(opts ...Option) *Executor {
 	}
 	ecr = &Executor{
 		option:   o,
-		receiver: make(chan<- []byte, 1000),
-		execute:  make(<-chan []byte, 1000),
+		receiver: make(chan []byte, 1000),
+		execute:  make(chan []byte, 1000),
 	}
 	return ecr
 }
@@ -39,10 +38,35 @@ func (e *Executor) Name() string {
 }
 
 func (e *Executor) Start(ctx context.Context) error {
-	fmt.Printf("%s start run, max_task %d\n", name, e.MaxTask)
+
+	sctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	go e.pipline(sctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case msg := <-e.execute:
+			fmt.Printf("run msg %s\n", string(msg))
+		}
+	}
 	return nil
 }
 
 func (e *Executor) Stop(ctx context.Context) error {
 	return nil
+}
+
+func (e *Executor) pipline(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-e.receiver:
+			//TODO: do something
+			e.execute <- msg
+		}
+	}
 }
