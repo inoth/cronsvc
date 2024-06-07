@@ -68,11 +68,10 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 				tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
 			},
 		}
-		svr.ListenAndServeTLS(e.Cert, e.Key)
+		return svr.ListenAndServeTLS(e.Cert, e.Key)
 	} else {
-		svr.ListenAndServe()
+		return svr.ListenAndServe()
 	}
-	return nil
 }
 
 func (e *CronHttpServer) Stop(ctx context.Context) error {

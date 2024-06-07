@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	"sync"
 )
 
 const (
@@ -16,8 +17,14 @@ var (
 type Executor struct {
 	option
 
-	receiver chan []byte
-	execute  chan []byte
+	mu sync.Mutex
+
+	taskCount int
+
+	receiver chan TaskBody
+	execute  chan TaskBody
+
+	tasks map[string]TaskBody
 }
 
 func New(opts ...Option) *Executor {
@@ -27,14 +34,38 @@ func New(opts ...Option) *Executor {
 	}
 	ecr = &Executor{
 		option:   o,
-		receiver: make(chan []byte, 1000),
-		execute:  make(chan []byte, 1000),
+		receiver: make(chan TaskBody, 1000),
+		execute:  make(chan TaskBody, 1000),
 	}
 	return ecr
 }
 
 func (e *Executor) Name() string {
 	return name
+}
+
+func (e *Executor) CurrentTaskCount() int {
+	return e.taskCount
+}
+
+func (e *Executor) TaskChange(add int) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.taskCount += add
+}
+
+func (e *Executor) AddTask(task TaskBody) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	if _, ok := e.tasks[task.ID]; !ok {
+		e.tasks[task.ID] = task
+	}
+}
+
+func (e *Executor) Remove(task TaskBody) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	delete(e.tasks, task.ID)
 }
 
 func (e *Executor) Start(ctx context.Context) error {
@@ -47,12 +78,14 @@ func (e *Executor) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
+			if err := ctx.Err(); err != nil && err != context.Canceled {
+				return err
+			}
 			return nil
 		case msg := <-e.execute:
-			fmt.Printf("run msg %s\n", string(msg))
+			fmt.Printf("run msg %s\n", msg.String())
 		}
 	}
-	return nil
 }
 
 func (e *Executor) Stop(ctx context.Context) error {
