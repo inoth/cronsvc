@@ -3,6 +3,7 @@ package cronsvc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -14,8 +15,7 @@ import (
 )
 
 type CronExecutor struct {
-	opt option
-	// mu     sync.Mutex
+	opt    option
 	ctx    context.Context
 	cancel func()
 }
@@ -43,6 +43,7 @@ func (ce *CronExecutor) Name() string    { return ce.opt.name }
 func (ce *CronExecutor) Version() string { return ce.opt.version }
 
 func (ce *CronExecutor) Run() (err error) {
+	fmt.Printf("cronsvc start %s\n", ce.ID())
 
 	if ce.opt.cfg == nil {
 		return ErrNotConfig
@@ -74,6 +75,7 @@ func (ce *CronExecutor) Run() (err error) {
 	eg.Go(func() error {
 		select {
 		case <-ctx.Done():
+			fmt.Printf("cronsvc stop %s\n", ce.ID())
 			return nil
 		case <-c:
 			return ce.Stop()
