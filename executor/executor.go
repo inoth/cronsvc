@@ -23,7 +23,7 @@ var (
 type Executor struct {
 	option
 
-	c *cron.Cron
+	cr *cron.Cron
 
 	mu     sync.Mutex
 	ctx    context.Context
@@ -47,7 +47,7 @@ func New(opts ...Option) *Executor {
 	}
 	ecr = &Executor{
 		option:   o,
-		c:        cron.New(cron.WithSeconds()),
+		cr:       cron.New(cron.WithSeconds()),
 		col:      make(chan collector.Collector, o.CollectorCount),
 		receiver: make(chan TaskBody, o.ReceiverCount),
 		execute:  make(chan TaskBody, o.ExecuteCount),
@@ -61,7 +61,7 @@ func (e *Executor) Name() string {
 }
 
 func (e *Executor) CurrentTaskCount() int {
-	return len(e.c.Entries())
+	return len(e.cr.Entries())
 }
 
 func (e *Executor) AddTask(taskBody TaskBody) error {
@@ -77,7 +77,7 @@ func (e *Executor) AddTask(taskBody TaskBody) error {
 		ctx := context.WithValue(e.ctx, "taskId", taskBody.ID)
 		taskBody.ctx, taskBody.cancel = context.WithCancel(ctx)
 
-		runID, err := e.c.AddFunc(taskBody.Crontab, func() {
+		runID, err := e.cr.AddFunc(taskBody.Crontab, func() {
 			val().Run(taskBody.ctx, e.col, taskBody.Body)
 		})
 		if err != nil {
@@ -99,7 +99,7 @@ func (e *Executor) RemoveTask(taskId string) {
 		task.cancel()
 		delete(e.tasks, taskId)
 
-		e.c.Remove(cron.EntryID(task.runID))
+		e.cr.Remove(cron.EntryID(task.runID))
 
 		fmt.Printf("remove task %s success; current task %d\n", taskId, e.CurrentTaskCount())
 	}
@@ -112,13 +112,13 @@ func (e *Executor) Start(ctx context.Context) error {
 
 	go e.pipline()
 	go e.runCollector()
-	e.c.Start()
+	e.cr.Start()
 
 	for {
 		select {
 		case <-e.ctx.Done():
 			if err := e.ctx.Err(); err != nil && err != context.Canceled {
-				e.c.Stop()
+				e.cr.Stop()
 				return err
 			}
 			return nil
