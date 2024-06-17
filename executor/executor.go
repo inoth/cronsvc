@@ -38,20 +38,17 @@ type Executor struct {
 
 func New(opts ...Option) *Executor {
 	o := option{
-		CollectorCount: 100,
-		ReceiverCount:  100,
-		ExecuteCount:   100,
+		CollectorCount: 10,
+		ReceiverCount:  10,
+		ExecuteCount:   10,
 	}
 	for _, opt := range opts {
 		opt(&o)
 	}
 	ecr = &Executor{
-		option:   o,
-		cr:       cron.New(cron.WithSeconds()),
-		col:      make(chan collector.Collector, o.CollectorCount),
-		receiver: make(chan TaskBody, o.ReceiverCount),
-		execute:  make(chan TaskBody, o.ExecuteCount),
-		tasks:    make(map[string]TaskBody),
+		option: o,
+		cr:     cron.New(cron.WithSeconds()),
+		tasks:  make(map[string]TaskBody),
 	}
 	return ecr
 }
@@ -106,6 +103,10 @@ func (e *Executor) RemoveTask(taskId string) {
 }
 
 func (e *Executor) Start(ctx context.Context) error {
+
+	e.col = make(chan collector.Collector, e.CollectorCount)
+	e.receiver = make(chan TaskBody, e.ReceiverCount)
+	e.execute = make(chan TaskBody, e.ExecuteCount)
 
 	e.ctx, e.cancel = context.WithCancel(ctx)
 	defer e.cancel()
