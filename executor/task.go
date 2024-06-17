@@ -1,8 +1,15 @@
 package executor
 
-import "encoding/json"
+import (
+	"context"
+	"encoding/json"
+)
 
 type TaskBody struct {
+	ctx    context.Context
+	cancel func()
+
+	runID   int               `json:"-"`
 	Status  int               `json:"status"`
 	ID      string            `json:"id"`
 	Title   string            `json:"title"`
@@ -37,4 +44,8 @@ func (tb *TaskBody) Equal(o any) bool {
 
 func ReceiverTask(msg TaskBody) {
 	ecr.receiver <- msg
+}
+
+func RemoveTask(taskId string) {
+	ecr.RemoveTask(taskId)
 }

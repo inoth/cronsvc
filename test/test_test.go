@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,8 @@ import (
 	"github.com/inoth/cronsvc/executor"
 	httpapi "github.com/inoth/cronsvc/http-api"
 	"github.com/inoth/cronsvc/internal/util"
+
+	_ "github.com/inoth/cronsvc/executor/task/all"
 )
 
 func TestNewCronSvc(t *testing.T) {
@@ -16,21 +19,28 @@ func TestNewCronSvc(t *testing.T) {
 		cronsvc.WithConfig(config.NewConfig()),
 		cronsvc.WithServer(
 			executor.New(),
-			httpapi.New(httpapi.WithGET("", func(c *gin.Context) {
-				executor.ReceiverTask(executor.TaskBody{
-					ID:      util.UUID(),
-					Title:   "test task",
-					Status:  1,
-					Tag:     util.UUID(),
-					Crontab: "* 5 4 * * sun",
-					Body: map[string]string{
-						"val1": "aaaa",
-						"val2": "bbbb",
-						"val3": "cccc",
-					},
-				})
-				c.String(200, " hello world ")
-			})),
+			httpapi.New(
+				httpapi.WithGET("", func(c *gin.Context) {
+					id := util.UUID()
+					executor.ReceiverTask(executor.TaskBody{
+						ID:      id,
+						Title:   "test task",
+						Status:  1,
+						Tag:     "http_collector",
+						Crontab: "0/5 * * * * *",
+						Body: map[string]string{
+							"val1": "aaaa",
+							"val2": "bbbb",
+							"val3": "cccc",
+						},
+					})
+					c.String(200, fmt.Sprintf("task id: %s", id))
+				}),
+				httpapi.WithGET("/del/:id", func(c *gin.Context) {
+					id := c.Param("id")
+					executor.RemoveTask(id)
+					c.String(200, "ok")
+				})),
 		),
 	)
 	if err := c.Run(); err != nil {

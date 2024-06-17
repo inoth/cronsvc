@@ -3,7 +3,6 @@ package httpapi
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -40,7 +39,7 @@ func (h *CronHttpServer) Name() string {
 }
 
 func (e *CronHttpServer) Start(ctx context.Context) error {
-	fmt.Printf("Port %s; ReadTimeout %d; WriteTimeout %d; MaxHeaderBytes %d\n", e.Port, e.ReadTimeout, e.WriteTimeout, e.MaxHeaderBytes)
+
 	e.loadRouter()
 
 	svr := &http.Server{

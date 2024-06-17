@@ -1,2 +1,5 @@
 [server.executor]
-max_task = 1000
+
+collector_count = 100
+receiver_count = 100
+execute_count = 100
