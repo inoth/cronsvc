@@ -1,9 +1,13 @@
 package task
 
-import "github.com/inoth/cronsvc/executor/collector"
+import (
+	"context"
+
+	"github.com/inoth/cronsvc/executor/collector"
+)
 
 type CornTask interface {
-	Run(col chan<- collector.Collector, taskId string, args map[string]string)
+	Run(ctx context.Context, col chan<- collector.Collector, args map[string]string)
 }
 
 type Creator func() CornTask

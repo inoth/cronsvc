@@ -29,8 +29,6 @@ type Executor struct {
 	ctx    context.Context
 	cancel func()
 
-	taskCount int
-
 	col      chan collector.Collector
 	receiver chan TaskBody
 	execute  chan TaskBody
@@ -63,7 +61,7 @@ func (e *Executor) Name() string {
 }
 
 func (e *Executor) CurrentTaskCount() int {
-	return e.taskCount
+	return len(e.c.Entries())
 }
 
 func (e *Executor) AddTask(taskBody TaskBody) error {
@@ -75,19 +73,21 @@ func (e *Executor) AddTask(taskBody TaskBody) error {
 		if !ok {
 			return fmt.Errorf("invalid task tag = %s", taskBody.Tag)
 		}
+
+		ctx := context.WithValue(e.ctx, "taskId", taskBody.ID)
+		taskBody.ctx, taskBody.cancel = context.WithCancel(ctx)
+
 		runID, err := e.c.AddFunc(taskBody.Crontab, func() {
-			val().Run(e.col, taskBody.ID, taskBody.Body)
+			val().Run(taskBody.ctx, e.col, taskBody.Body)
 		})
 		if err != nil {
 			return errors.Wrap(err, "append task job err")
 		}
 		taskBody.runID = int(runID)
 
-		taskBody.ctx, taskBody.cancel = context.WithCancel(e.ctx)
 		e.tasks[taskBody.ID] = taskBody
-		e.taskCount += 1
 
-		fmt.Printf("start task %s success; current task %d\n", taskBody.ID, e.taskCount)
+		fmt.Printf("start task %s success; current task %d\n", taskBody.ID, e.CurrentTaskCount())
 	}
 	return nil
 }
@@ -100,9 +100,8 @@ func (e *Executor) RemoveTask(taskId string) {
 		delete(e.tasks, taskId)
 
 		e.c.Remove(cron.EntryID(task.runID))
-		e.taskCount -= 1
 
-		fmt.Printf("remove task %s success; current task %d\n", taskId, e.taskCount)
+		fmt.Printf("remove task %s success; current task %d\n", taskId, e.CurrentTaskCount())
 	}
 }
 
@@ -119,6 +118,7 @@ func (e *Executor) Start(ctx context.Context) error {
 		select {
 		case <-e.ctx.Done():
 			if err := e.ctx.Err(); err != nil && err != context.Canceled {
+				e.c.Stop()
 				return err
 			}
 			return nil
@@ -131,9 +131,7 @@ func (e *Executor) Start(ctx context.Context) error {
 }
 
 func (e *Executor) Stop(ctx context.Context) error {
-	if err := e.c.Stop().Err(); err != nil && err != context.Canceled {
-		return err
-	}
+	e.cancel()
 	return nil
 }
 
