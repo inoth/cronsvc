@@ -2,7 +2,6 @@ package httpcol
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/inoth/cronsvc/executor/collector"
@@ -17,8 +16,7 @@ func (hc *HttpCollector) Run(ctx context.Context, col chan<- collector.Collector
 	taskId := ctx.Value("taskId").(string)
 	defer runningTime(taskId, col)()
 
-	fmt.Printf("taskid = %s; http_collector run dosomething %+v", taskId, args)
-	time.Sleep(time.Microsecond * 100)
+	time.Sleep(time.Millisecond * 100)
 }
 
 func init() {

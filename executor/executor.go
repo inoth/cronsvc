@@ -160,7 +160,8 @@ func (e *Executor) runCollector() {
 		case col := <-e.col:
 			switch col.Call {
 			case collector.TyptRunningTime:
-				metric.SetDuration(col.ID, "", float64(col.EndTime.Sub(col.StartTime)))
+				fmt.Printf("Run Task: %s\n", col.String())
+				metric.SetDuration(col.ID, "", float64(col.EndTime.Sub(col.StartTime).Seconds()))
 			default:
 				//TODO: 输出日志等信息
 				fmt.Printf("Run Task: %s\n", col.String())
