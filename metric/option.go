@@ -1,0 +1,21 @@
+package metric
+
+type Option func(opt *option)
+
+type option struct {
+	Port      string `toml:"port"`
+	Subsystem string `toml:"subsystem"`
+	Namespace string `toml:"namespace"`
+}
+
+func WithSubsystem(subsystem string) Option {
+	return func(opt *option) {
+		opt.Subsystem = subsystem
+	}
+}
+
+func WithNamespace(namespace string) Option {
+	return func(opt *option) {
+		opt.Namespace = namespace
+	}
+}

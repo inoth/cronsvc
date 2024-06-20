@@ -10,6 +10,7 @@ import (
 	"github.com/inoth/cronsvc/executor"
 	httpapi "github.com/inoth/cronsvc/http-api"
 	"github.com/inoth/cronsvc/internal/util"
+	"github.com/inoth/cronsvc/metric"
 
 	_ "github.com/inoth/cronsvc/executor/task/all"
 )
@@ -18,6 +19,7 @@ func TestNewCronSvc(t *testing.T) {
 	c := cronsvc.New(
 		cronsvc.WithConfig(config.NewConfig()),
 		cronsvc.WithServer(
+			metric.New(),
 			executor.New(),
 			httpapi.New(
 				httpapi.WithGET("", func(c *gin.Context) {

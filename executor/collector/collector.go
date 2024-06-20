@@ -5,17 +5,29 @@ import (
 	"time"
 )
 
+const (
+	TyptRunningTime = "runtime"
+)
+
 type Collector struct {
-	ID       string            `json:"id"`
-	Field    map[string]string `json:"field"`
-	Timespan time.Time         `json:"timespan"`
+	Call      string            `json:"call"`
+	ID        string            `json:"id"`
+	Field     map[string]string `json:"field"`
+	StartTime time.Time         `json:"start_time"`
+	EndTime   time.Time         `json:"end_time"`
 }
 
-func NewCollector(id string, field map[string]string) Collector {
+func NewCollectorWithRunning(id string, startTime time.Time, field map[string]string) Collector {
+	return NewCollector(TyptRunningTime, id, startTime, field)
+}
+
+func NewCollector(call, id string, startTime time.Time, field map[string]string) Collector {
 	return Collector{
-		ID:       id,
-		Field:    field,
-		Timespan: time.Now(),
+		Call:      call,
+		ID:        id,
+		Field:     field,
+		StartTime: startTime,
+		EndTime:   time.Now(),
 	}
 }
 

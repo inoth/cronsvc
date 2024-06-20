@@ -1,6 +1,6 @@
 [server.gin]
 
-port = ":9191"
+port = ":9050"
 read_timeout = 10
 write_timeout = 10
 max_header_bytes = 10

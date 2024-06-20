@@ -7,6 +7,7 @@ import (
 
 	"github.com/inoth/cronsvc/executor/collector"
 	"github.com/inoth/cronsvc/executor/task"
+	"github.com/inoth/cronsvc/metric"
 
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
@@ -84,6 +85,8 @@ func (e *Executor) AddTask(taskBody TaskBody) error {
 
 		e.tasks[taskBody.ID] = taskBody
 
+		metric.AddTaskCount(1)
+		metric.SetCurrentTask(float64(e.CurrentTaskCount()))
 		fmt.Printf("start task %s success; current task %d\n", taskBody.ID, e.CurrentTaskCount())
 	}
 	return nil
@@ -98,6 +101,7 @@ func (e *Executor) RemoveTask(taskId string) {
 
 		e.cr.Remove(cron.EntryID(task.runID))
 
+		metric.SetCurrentTask(float64(e.CurrentTaskCount()))
 		fmt.Printf("remove task %s success; current task %d\n", taskId, e.CurrentTaskCount())
 	}
 }
@@ -154,8 +158,13 @@ func (e *Executor) runCollector() {
 		case <-e.ctx.Done():
 			return
 		case col := <-e.col:
-			//TODO: 输出日志等信息
-			fmt.Printf("Run Task: %s\n", col.String())
+			switch col.Call {
+			case collector.TyptRunningTime:
+				metric.SetDuration(col.ID, "", float64(col.EndTime.Sub(col.StartTime)))
+			default:
+				//TODO: 输出日志等信息
+				fmt.Printf("Run Task: %s\n", col.String())
+			}
 		}
 	}
 }
