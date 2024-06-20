@@ -83,7 +83,7 @@ func (cc *CronsvcMetric) newMetrics() {
 		Name:      "task_run_duration_seconds",
 		Help:      "任务运行耗时",
 		Buckets:   prometheus.DefBuckets,
-	}, []string{"task_id", "task_name"})
+	}, []string{"task_id"})
 }
 
 func AddTaskCount(val float64) {
@@ -100,9 +100,9 @@ func SetCurrentTask(val float64) {
 	cm.currentTask.Set(val)
 }
 
-func SetDuration(taskId, taskName string, task_time float64) {
+func SetDuration(taskId string, task_time float64) {
 	if cm == nil {
 		return
 	}
-	cm.duration.WithLabelValues(taskId, taskName).Observe(task_time)
+	cm.duration.WithLabelValues(taskId).Observe(task_time)
 }
