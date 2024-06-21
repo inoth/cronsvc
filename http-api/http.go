@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -49,7 +50,7 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 		WriteTimeout:   time.Second * time.Duration(e.WriteTimeout),
 		MaxHeaderBytes: 1 << uint(e.MaxHeaderBytes),
 	}
-
+	var err error
 	if e.TLS {
 		svr.TLSConfig = &tls.Config{
 			MinVersion:               tls.VersionTLS13,
@@ -67,10 +68,14 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 				tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
 			},
 		}
-		return svr.ListenAndServeTLS(e.Cert, e.Key)
+		err = svr.ListenAndServeTLS(e.Cert, e.Key)
 	} else {
-		return svr.ListenAndServe()
+		err = svr.ListenAndServe()
 	}
+	if err != nil {
+		return errors.Wrap(err, "start http server err")
+	}
+	return nil
 }
 
 func (e *CronHttpServer) Stop(ctx context.Context) error {

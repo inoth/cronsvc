@@ -11,6 +11,7 @@ import (
 	httpapi "github.com/inoth/cronsvc/http-api"
 	"github.com/inoth/cronsvc/internal/util"
 	"github.com/inoth/cronsvc/metric"
+	"github.com/inoth/cronsvc/perf"
 
 	_ "github.com/inoth/cronsvc/executor/task/all"
 )
@@ -19,6 +20,7 @@ func TestNewCronSvc(t *testing.T) {
 	c := cronsvc.New(
 		cronsvc.WithConfig(config.NewConfig()),
 		cronsvc.WithServer(
+			perf.New(perf.WithPort(":9090")),
 			metric.New(),
 			executor.New(),
 			httpapi.New(
