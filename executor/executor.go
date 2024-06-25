@@ -122,8 +122,9 @@ func (e *Executor) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-e.ctx.Done():
+			fmt.Println("Done executor..............")
+			e.cr.Stop()
 			if err := e.ctx.Err(); err != nil && err != context.Canceled {
-				e.cr.Stop()
 				return err
 			}
 			return nil

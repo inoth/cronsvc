@@ -10,7 +10,6 @@ type TaskBody struct {
 	cancel func()
 
 	runID   int               `json:"-"`
-	Status  int               `json:"status"`
 	ID      string            `json:"id"`
 	Title   string            `json:"title"`
 	Tag     string            `json:"tag"`

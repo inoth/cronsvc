@@ -3,6 +3,7 @@ package httpapi
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -19,10 +20,12 @@ const (
 type CronHttpServer struct {
 	option
 	sfg singleflight.Group
+	svr *http.Server
 }
 
 func New(opts ...Option) *CronHttpServer {
 	o := option{
+		Port:    ":9050",
 		engine:  gin.New(),
 		handles: make([]Handler, 0),
 	}
@@ -43,7 +46,7 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 
 	e.loadRouter()
 
-	svr := &http.Server{
+	e.svr = &http.Server{
 		Addr:           e.Port,
 		Handler:        e.engine,
 		ReadTimeout:    time.Second * time.Duration(e.ReadTimeout),
@@ -52,7 +55,7 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 	}
 	var err error
 	if e.TLS {
-		svr.TLSConfig = &tls.Config{
+		e.svr.TLSConfig = &tls.Config{
 			MinVersion:               tls.VersionTLS13,
 			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
 			PreferServerCipherSuites: true,
@@ -68,9 +71,9 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 				tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
 			},
 		}
-		err = svr.ListenAndServeTLS(e.Cert, e.Key)
+		err = e.svr.ListenAndServeTLS(e.Cert, e.Key)
 	} else {
-		err = svr.ListenAndServe()
+		err = e.svr.ListenAndServe()
 	}
 	if err != nil {
 		return errors.Wrap(err, "start http server err")
@@ -79,6 +82,10 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 }
 
 func (e *CronHttpServer) Stop(ctx context.Context) error {
+	fmt.Println("Done httpapi..............")
+	if err := e.svr.Shutdown(ctx); err != nil {
+		return errors.Wrap(err, "stop http svr err")
+	}
 	return nil
 }
 

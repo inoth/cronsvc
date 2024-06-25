@@ -49,6 +49,9 @@ func (ce *CronExecutor) Run() (err error) {
 		return ErrNotConfig
 	}
 
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, ce.opt.sigs...)
+
 	wg := sync.WaitGroup{}
 	eg, ctx := errgroup.WithContext(ce.ctx)
 
@@ -59,6 +62,7 @@ func (ce *CronExecutor) Run() (err error) {
 		}
 		eg.Go(func() error {
 			<-ctx.Done()
+			fmt.Printf("stop svc %s\n", svc.(config.ConfigureMatcher).Name())
 			return svc.Stop(ctx)
 		})
 		wg.Add(1)
@@ -70,14 +74,13 @@ func (ce *CronExecutor) Run() (err error) {
 
 	wg.Wait()
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, ce.opt.sigs...)
 	eg.Go(func() error {
 		select {
 		case <-ctx.Done():
 			fmt.Printf("cronsvc stop %s\n", ce.ID())
 			return nil
 		case <-c:
+			fmt.Printf("cronsvc stop %s\n", ce.ID())
 			return ce.Stop()
 		}
 	})

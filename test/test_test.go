@@ -29,7 +29,6 @@ func TestNewCronSvc(t *testing.T) {
 					executor.ReceiverTask(executor.TaskBody{
 						ID:      id,
 						Title:   "test task",
-						Status:  1,
 						Tag:     "http_collector",
 						Crontab: "0/5 * * * * *",
 						Body: map[string]string{

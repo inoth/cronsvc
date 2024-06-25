@@ -2,6 +2,7 @@ package metric
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -19,6 +20,8 @@ var (
 
 type CronsvcMetric struct {
 	option
+
+	svr *http.Server
 
 	taskCount   prometheus.Counter
 	currentTask prometheus.Gauge
@@ -52,15 +55,21 @@ func (cc *CronsvcMetric) Start(ctx context.Context) error {
 	reg.MustRegister(cc.duration)
 
 	mux := http.NewServeMux()
+
 	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 
-	if err := http.ListenAndServe(cc.Port, mux); err != nil {
+	cc.svr = &http.Server{Addr: cc.Port, Handler: mux}
+
+	if err := cc.svr.ListenAndServe(); err != nil {
 		return errors.Wrap(err, "start cronsvc metric err")
 	}
+
 	return nil
 }
 
 func (cc *CronsvcMetric) Stop(ctx context.Context) error {
+	fmt.Println("Done metric..............")
+	cc.svr.Shutdown(ctx)
 	return nil
 }
 

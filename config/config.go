@@ -59,7 +59,7 @@ func NewConfig(cbs ...CfgBasic) ConfigMate {
 			basic: cb,
 		}
 		if err := tomlCfg.Decode(); err != nil {
-			panic(err)
+			fmt.Printf("%v", err)
 		}
 		return tomlCfg
 	default:
