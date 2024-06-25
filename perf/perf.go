@@ -20,7 +20,7 @@ type Perf struct {
 
 func New(opts ...Option) *Perf {
 	o := option{
-		Port: ":9059",
+		Port: ":9052",
 	}
 	for _, opt := range opts {
 		opt(&o)
