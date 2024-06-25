@@ -2,7 +2,6 @@ package perf
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	_ "net/http/pprof"
 
@@ -46,6 +45,5 @@ func (p *Perf) Start(ctx context.Context) error {
 }
 
 func (p *Perf) Stop(ctx context.Context) error {
-	fmt.Println("Done perf..............")
 	return p.svr.Shutdown(ctx)
 }

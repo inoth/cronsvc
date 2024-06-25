@@ -57,7 +57,7 @@ func (ce *CronExecutor) Run() (err error) {
 
 	for _, svc := range ce.opt.svcs {
 		svc := svc
-		_, ok := svc.(config.ConfigureMatcher)
+		cm, ok := svc.(config.ConfigureMatcher)
 		if !ok {
 			continue
 		}
@@ -66,12 +66,13 @@ func (ce *CronExecutor) Run() (err error) {
 		}
 		eg.Go(func() error {
 			<-ctx.Done()
-			fmt.Printf("stop svc %s\n", svc.(config.ConfigureMatcher).Name())
+			fmt.Printf("Done %s ...............\n", cm.Name())
 			return svc.Stop(ctx)
 		})
 		wg.Add(1)
 		eg.Go(func() error {
 			wg.Done()
+			fmt.Printf("Start %s ...............\n", cm.Name())
 			return svc.Start(ctx)
 		})
 	}
@@ -81,10 +82,10 @@ func (ce *CronExecutor) Run() (err error) {
 	eg.Go(func() error {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("cronsvc stop %s\n", ce.ID())
+			fmt.Printf("Done cronsvc %s ...............\n", ce.ID())
 			return nil
 		case <-c:
-			fmt.Printf("cronsvc stop %s\n", ce.ID())
+			fmt.Printf("Done cronsvc %s ...............\n", ce.ID())
 			return ce.Stop()
 		}
 	})

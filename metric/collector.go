@@ -2,7 +2,6 @@ package metric
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -68,7 +67,6 @@ func (cc *CronsvcMetric) Start(ctx context.Context) error {
 }
 
 func (cc *CronsvcMetric) Stop(ctx context.Context) error {
-	fmt.Println("Done metric..............")
 	return cc.svr.Shutdown(ctx)
 }
 

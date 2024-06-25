@@ -3,7 +3,6 @@ package httpapi
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -82,7 +81,6 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 }
 
 func (e *CronHttpServer) Stop(ctx context.Context) error {
-	fmt.Println("Done httpapi..............")
 	return e.svr.Shutdown(ctx)
 }
 
