@@ -83,10 +83,7 @@ func (e *CronHttpServer) Start(ctx context.Context) error {
 
 func (e *CronHttpServer) Stop(ctx context.Context) error {
 	fmt.Println("Done httpapi..............")
-	if err := e.svr.Shutdown(ctx); err != nil {
-		return errors.Wrap(err, "stop http svr err")
-	}
-	return nil
+	return e.svr.Shutdown(ctx)
 }
 
 func (e *CronHttpServer) Do(key string, fn func() (any, error)) (v any, err error, shared bool) {

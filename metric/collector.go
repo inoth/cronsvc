@@ -69,8 +69,7 @@ func (cc *CronsvcMetric) Start(ctx context.Context) error {
 
 func (cc *CronsvcMetric) Stop(ctx context.Context) error {
 	fmt.Println("Done metric..............")
-	cc.svr.Shutdown(ctx)
-	return nil
+	return cc.svr.Shutdown(ctx)
 }
 
 func (cc *CronsvcMetric) newMetrics() {

@@ -13,6 +13,7 @@ import (
 	httpapi "github.com/inoth/cronsvc/http-api"
 	"github.com/inoth/cronsvc/internal/util"
 	"github.com/inoth/cronsvc/metric"
+	"github.com/inoth/cronsvc/perf"
 )
 
 type TaskRequest struct {
@@ -34,7 +35,7 @@ func runApp() {
 	c := cronsvc.New(
 		cronsvc.WithConfig(config.NewConfig()),
 		cronsvc.WithServer(
-			// perf.New(),
+			perf.New(),
 			metric.New(),
 			executor.New(),
 			httpapi.New(

@@ -57,6 +57,10 @@ func (ce *CronExecutor) Run() (err error) {
 
 	for _, svc := range ce.opt.svcs {
 		svc := svc
+		_, ok := svc.(config.ConfigureMatcher)
+		if !ok {
+			continue
+		}
 		if err := ce.opt.cfg.PrimitiveDecode(svc.(config.ConfigureMatcher)); err != nil {
 			return err
 		}
