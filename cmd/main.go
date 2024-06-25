@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -61,7 +62,7 @@ func runApp() {
 			),
 		),
 	)
-	if err := c.Run(); err != nil {
+	if err := c.Run(); err != nil && err != context.Canceled {
 		fmt.Printf("run cronsvc err %v\n", err)
 	}
 }
