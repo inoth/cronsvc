@@ -1,0 +1,75 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*" # 在创建标签时触发，类似 v1.0.0
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Build
+        run: |
+          mkdir -p dist
+          go mod tidy
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/cronsvc_${{ matrix.goos }}_${{ matrix.goarch }} cmd/cronsvc/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cronsvc_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: dist/cronsvc_${{ matrix.goos }}_${{ matrix.goarch }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: dist
+
+      - name: Create Github Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name:     ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft:        false
+          prerelease:   true
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/
+          asset_name: cronsvc_${{ matrix.goos }}_${{ matrix.goarch }}
+          asset_content_type: application/octet-stream
