@@ -81,8 +81,8 @@ jobs:
         uses: softprops/action-gh-release@v2.0.8
         with: 
           files: |
-            cronsvc_windows_amd64_${{ github.ref_name }}
-            cronsvc_linux_amd64_${{ github.ref_name }}
+            dist/cronsvc_windows_amd64_${{ github.ref_name }}
+            dist/cronsvc_linux_amd64_${{ github.ref_name }}
 
       # - name: Upload Release Assets
       #   uses: actions/upload-release-asset@v1
