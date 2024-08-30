@@ -50,11 +50,14 @@ jobs:
           mkdir -p dist
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/cronsvc_${{ matrix.goos }}_${{ matrix.goarch }} ./cmd/cronsvc
 
+      - name: Compress artifact using tar
+        run: tar -czvf dist/cronsvc_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz -C dist cronsvc_${{ matrix.goos }}_${{ matrix.goarch }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: cronsvc_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: dist/cronsvc_${{ matrix.goos }}_${{ matrix.goarch }}
+          name: cronsvc_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz
+          path: dist/cronsvc_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz
 
   release:
     needs: build
@@ -85,9 +88,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: |
-            ${{ github.workspace }}/dist/cronsvc_${{ github.ref_name }}_windows_amd64
-            ${{ github.workspace }}/dist/cronsvc_${{ github.ref_name }}_linux_amd64
+          files: dist/*
 
       # - name: Upload Release Assets
       #   uses: actions/upload-release-asset@v1
