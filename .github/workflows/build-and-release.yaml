@@ -68,7 +68,7 @@ jobs:
         uses: actions/download-artifact@v3
 
       - name: List files in dist
-        run: ls -al ./
+        run: ls -alR ./
 
       # - name: Create Github Release
       #   id: create_release
