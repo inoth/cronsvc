@@ -53,7 +53,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: cronsvc_${{ matrix.goos }}_${{ matrix.goarch }}_${{ github.ref_name }}
+          name: cronsvc_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}
           path: dist/cronsvc_${{ matrix.goos }}_${{ matrix.goarch }}
 
   release:
@@ -78,14 +78,16 @@ jobs:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
           draft: false
-          prerelease: true
+          prerelease: false
 
       - name: Upload Release Assets With GH
         uses: softprops/action-gh-release@v2.0.8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            ${{ github.workspace }}/dist/cronsvc_windows_amd64_${{ github.ref_name }}
-            ${{ github.workspace }}/dist/cronsvc_linux_amd64_${{ github.ref_name }}
+            ${{ github.workspace }}/dist/cronsvc_${{ github.ref_name }}_windows_amd64
+            ${{ github.workspace }}/dist/cronsvc_${{ github.ref_name }}_linux_amd64
 
       # - name: Upload Release Assets
       #   uses: actions/upload-release-asset@v1
