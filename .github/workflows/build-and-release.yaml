@@ -66,31 +66,32 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
-        with:
-          path: dist
 
       - name: List files in dist
-        run: ls -al dist
+        run: ls -al ./
 
-      - name: Create Github Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
+      # - name: Create Github Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref_name }}
+      #     release_name: Release ${{ github.ref_name }}
+      #     draft: false
+      #     prerelease: false
 
       - name: Upload Release Assets With GH
         uses: softprops/action-gh-release@v2.0.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(github.ref, 'refs/tags/')
         with:
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
           files: |
-            dist/cronsvc_${{ github.ref_name }}_windows_amd64.tar.gz
-            dist/cronsvc_${{ github.ref_name }}_linux_amd64.tar.gz
+            ./cronsvc_*.tar.gz
 
       # - name: Upload Release Assets
       #   uses: actions/upload-release-asset@v1
