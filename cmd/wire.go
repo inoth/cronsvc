@@ -6,7 +6,6 @@ import (
 	"github.com/google/wire"
 	"github.com/inoth/cronsvc/internal/controller"
 	"github.com/inoth/cronsvc/internal/server"
-	"github.com/inoth/cronsvc/internal/service"
 	"github.com/inoth/toybox"
 	"github.com/inoth/toybox/config"
 	"github.com/inoth/toybox/ginsvr"
@@ -25,5 +24,5 @@ func newApp(
 
 func initApp(cfg config.CfgBasic) *toybox.ToyBox {
 	// panic(wire.Build(config.NewConfig, database.NewDB, service.ProviderSet, controller.ProviderSet, server.ProviderSet, newApp))
-	panic(wire.Build(config.NewConfig, service.ProviderSet, controller.ProviderSet, server.ProviderSet, newApp))
+	panic(wire.Build(config.NewConfig, controller.ProviderSet, server.ProviderSet, newApp))
 }
