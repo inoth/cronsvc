@@ -1,4 +1,0 @@
-[server.metric]
-port = ":9056"
-subsystem = "cronsvc"
-namespace = "test"

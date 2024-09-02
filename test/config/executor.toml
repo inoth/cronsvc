@@ -1,5 +1,0 @@
-[server.executor]
-
-collector_count = 100
-receiver_count = 100
-execute_count = 100
